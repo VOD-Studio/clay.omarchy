@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- 增加可手动启用的 `extras/rounded.lua`：窗口 12px 圆角、圆角曲率 2.0，Omarchy Shell 支持共享样式的元素跟随窗口，开关使用胶囊形。
+- 记录一次性安装、全局生效与回退方式，以及少数硬编码方角和应用内部控件的边界。
+
+### Verified
+
+- 实际 Hyprland 配置加载 `rounding = 12`、`rounding_power = 2.0`，重载后无配置错误，Shell IPC 正常。
+- 用安装的真实 Shell QML 组件执行离屏渲染，读取到共享半径、按钮、输入框与开关行半径均为 12，开关 `rounded = true`。
+
 ## 0.1.0 — 2026-10-30
 
 ### Added

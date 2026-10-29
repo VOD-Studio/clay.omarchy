@@ -15,13 +15,13 @@
 - **图标**：`Yaru-wartybrown-dark`，使用 Omarchy 常见的 Yaru 图标包，不下载额外图标。
 - **壁纸**：`backgrounds/01-clay-horizon.png`，3840×2160；中心构图兼顾竖屏裁切，SVG 源文件随项目提供。
 
-主题只提供外观数据，不修改按键、显示器、窗口规则、字号、用户 Shell 布局或空闲锁屏策略。状态栏分区覆盖保留 Omarchy 当前默认的 26/28 尺寸与字体缩放。
+主题本身不修改按键、显示器、窗口规则、字号、用户 Shell 布局或空闲锁屏策略。状态栏分区覆盖保留 Omarchy 当前默认的 26/28 尺寸与字体缩放；可选的全局圆角配置见下文。
 
 ## 兼容性
 
 面向 **Omarchy 4.0.6 的 `colors.toml` 与 `shell.<section>.toml` 主题接口**。需要当前版 Omarchy 的模板生成和 Shell 分区覆盖支持；不承诺旧版 Waybar/Walker/Hyprlock 独立配置的适配。
 
-从 Git 安装的主题不能直接提供 Lua、终端启动配置或 `vscode.json`。本项目不包含这些被拒绝的文件，而让 Omarchy 从色板生成配置，因此本地工作副本和仓库克隆使用相同的配色入口。
+从 Git 安装的主题不能直接覆盖会自动加载的 Lua、终端启动配置或 `vscode.json`。本项目让 Omarchy 从色板生成这些配置，因此本地工作副本和仓库克隆使用相同的配色入口；`extras/rounded.lua` 只是手动启用的圆角配置片段，不会由主题安装器自动执行。
 
 ## 安装
 
@@ -66,6 +66,25 @@ omarchy theme bg set /absolute/path/to/previous-background.png
 ```
 
 切换主题后，若使用上述本地链接安装，可用 `unlink ~/.config/omarchy/themes/clay` 仅移除链接。不要对真实克隆目录使用 `unlink`；需保留工作目录时先移出主题目录。
+
+## 可选：统一圆角
+
+[`extras/rounded.lua`](extras/rounded.lua) 提供 **12px 窗口圆角**与 `rounding_power = 2.0`。Omarchy Shell 的共享 `Style.cornerRadius` 会读取 Hyprland 的 `decoration:rounding`，菜单、面板、输入框、下拉框、通知和支持共享样式的按钮随之变圆；开关自动使用胶囊形。不需要复制或修改系统 Shell。
+
+在项目根目录执行以下操作，**只添加一次**；若已有同一段配置，不要重复追加：
+
+```bash
+cp ~/.config/hypr/looknfeel.lua ~/.config/hypr/looknfeel.lua.before-clay-rounded
+cat extras/rounded.lua >> ~/.config/hypr/looknfeel.lua
+hyprctl reload
+hyprctl configerrors
+# 刷新 Shell 的共享圆角值，但不更换当前壁纸：
+omarchy theme refresh
+```
+
+这是用户级 **全局外观偏好**，切换到其他配色主题后仍保留，也不依赖本项目路径。回退时移除 `looknfeel.lua` 中标记为 `Clay rounded profile` 的 `hl.config` 代码段，再重载 Hyprland、刷新主题；不要覆盖其后新增的其他个人设置。
+
+少数系统控件仍把方角写死，例如通用按钮提示框与确认对话框的按钮；应用内部自行绘制的控件也不受这个全局值控制。本项目保留这些系统实现，不维护 Shell 分支、不修改 `/usr/share/omarchy/`。
 
 ## 配色
 
@@ -120,6 +139,7 @@ icons.theme                 图标主题名称
 backgrounds/                可直接分发的 4K 壁纸
 artwork/                    自包含、可编辑的 SVG 源文件
 preview.png                 壁纸缩略图
+extras/rounded.lua          可手动启用的全局 12px 圆角配置
 scripts/preview.py          真实 Omarchy 隔离冒烟验证
 Makefile                    预览与壁纸重建入口
 CHANGELOG.md                用户可见变更与验证记录

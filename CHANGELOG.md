@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Removed
+
+- 移除 Clay Horizon 壁纸（`backgrounds/01-clay-horizon.png`）、其 SVG 源文件与 `make wallpaper` 中单独的 `rsvg-convert` 步骤；预览缩略图改用 `02-clawd-unit.png`，主题默认背景随目录第一张变化。
+
 ### Added
 
 - 增加可手动启用的 `extras/rounded.lua`：窗口 12px 圆角、圆角曲率 2.0，Omarchy Shell 支持共享样式的元素跟随窗口，开关使用胶囊形。

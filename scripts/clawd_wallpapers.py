@@ -1,7 +1,7 @@
 """Render the Clawd wallpaper series: TYPE-17-style framed panels in the Clay palette.
 
 Unofficial fan art of Anthropic's Clawd mascot, redrawn as a 16x8 pixel sprite.
-Writes 3840x2160 PNGs (02-06, after 01-clay-horizon) to backgrounds/ by default.
+Writes 3840x2160 PNGs 02-06 to backgrounds/ by default.
 Needs rsvg-convert plus the JetBrainsMono Nerd Font and Noto Sans CJK JP fonts.
 """
 import argparse, random, subprocess, tempfile

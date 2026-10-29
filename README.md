@@ -2,9 +2,9 @@
 
 灰阶为底，陶土色点睛的 [Omarchy](https://omarchy.org/) 深色主题。与 [clay.nvim](https://github.com/DefectingCat/clay.nvim) 和 clay.omp 使用同一套设计语言：安静的深灰表面、分层文字、克制的 `#d97757` 交互焦点。
 
-![Clay Horizon 原创壁纸预览，不是桌面截图](preview.png)
+![Clawd Unit 壁纸预览，不是桌面截图](preview.png)
 
-*Clay Horizon：原创 4K 矿物层叠壁纸。此图是随主题分发的壁纸缩略图，不是桌面效果截图。*
+*Clawd Unit：随主题分发的默认壁纸缩略图，不是桌面效果截图。*
 
 ## 主题范围
 
@@ -14,7 +14,7 @@
 - **应用**：由本机模板生成 btop、Helix、Neovim/Aether、VS Code、Obsidian、浏览器、Pi 等配色。是否写入应用、是否即时重载由 Omarchy 自身及应用安装情况决定。
 - **tmux**：Omarchy 的原生主题切换钩子同步窗口前景／背景、光标、面板色板与主题环境变量；不定制状态栏、窗口标签或面板边框。
 - **图标**：`Yaru-wartybrown-dark`，使用 Omarchy 常见的 Yaru 图标包，不下载额外图标。
-- **壁纸**：`backgrounds/01-clay-horizon.png` 为默认壁纸，3840×2160；中心构图兼顾竖屏裁切，SVG 源文件随项目提供。另附 Clawd 系列（见下文）。
+- **壁纸**：5 张 3840×2160 Clawd 壁纸（见下文），只用 Clay 色板。
 
 主题本身不修改按键、显示器、窗口规则、字号、用户 Shell 布局或空闲锁屏策略。Shell 尺寸与字体缩放跟随 Omarchy 默认模板；可选的全局圆角配置见下文。
 
@@ -30,7 +30,7 @@
 | `05-clawd-terminal.png` | 终端欢迎页式的方块字 Clawd 与提示符 |
 | `06-clawd-march.png` | 满框灰色 Clawd 中唯一的陶土色一只 |
 
-切换主题时默认使用 `01`；用 `omarchy theme bg next` 轮换，或 `omarchy theme bg set` 指定。Clawd 是 Anthropic 的吉祥物，本系列为非官方同人重绘，与 Anthropic 无关联。
+切换主题时默认取 `backgrounds/` 中的第一张；用 `omarchy theme bg next` 轮换，或 `omarchy theme bg set` 指定。Clawd 是 Anthropic 的吉祥物，本系列为非官方同人重绘，与 Anthropic 无关联。
 
 ## 兼容性
 
@@ -143,11 +143,11 @@ make preview
 # 导出生成结果以便检查：目标须尚不存在且位于项目之外。
 make preview ARGS='--output /tmp/clay-generated'
 
-# 从源文件重新生成发布用 4K 壁纸（需要 librsvg；Clawd 系列另需
-# JetBrainsMono Nerd Font 与 Noto Sans CJK JP 字体）：
+# 从源文件重新生成发布用 4K 壁纸（需要 librsvg、JetBrainsMono Nerd Font
+# 与 Noto Sans CJK JP 字体）：
 make wallpaper
 # 同步主题选择器／README 的壁纸缩略图（需要 ImageMagick）：
-magick backgrounds/01-clay-horizon.png -resize 1280x720 preview.png
+magick backgrounds/02-clawd-unit.png -resize 1280x720 preview.png
 ```
 
 `make preview` 需要 Python 3.11+、已安装的 Omarchy 和其标准运行依赖。它复制当前工作副本到临时 HOME，在真实 `.git` 目录存在的前提下走 Omarchy 的仓库主题安全分支；调用真实 headless 主题切换，检查生成结果中的未解析模板、TOML/JSON 语法、背景文件和 Lua 语法。`luac` 缺失时单独报告 `SKIP`。
@@ -164,7 +164,6 @@ magick backgrounds/01-clay-horizon.png -resize 1280x720 preview.png
 colors.toml                 语义色板，应用配置的生成入口
 icons.theme                 图标主题名称
 backgrounds/                可直接分发的 4K 壁纸
-artwork/                    自包含、可编辑的 SVG 源文件
 preview.png                 壁纸缩略图
 extras/rounded.lua          可手动启用的全局 12px 圆角配置
 scripts/preview.py          真实 Omarchy 隔离冒烟验证

@@ -6,6 +6,7 @@
 
 - 增加可手动启用的 `extras/rounded.lua`：窗口 12px 圆角、圆角曲率 2.0，Omarchy Shell 支持共享样式的元素跟随窗口，开关使用胶囊形。
 - 记录一次性安装、全局生效与回退方式，以及少数硬编码方角和应用内部控件的边界。
+- 增加 5 张 3840×2160 Clawd 壁纸（`backgrounds/02`–`06`）：参照 TYPE-17 的居中画框构图，以 Claude 像素吉祥物为主角，仅用 Clay 色板；由 `scripts/clawd_wallpapers.py` 生成，`make wallpaper` 一并重建。默认壁纸仍为 Clay Horizon。
 
 ### Verified
 

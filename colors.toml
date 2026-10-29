@@ -1,0 +1,41 @@
+# Clay: neutral surfaces and syntax, terracotta interaction focus.
+# Canonical Omarchy semantic names; app configs are generated at theme-set time.
+mode = "dark"
+
+accent = "#d97757"
+selection = "#2a2a2a"
+selection_background = "#2a2a2a"
+selection_foreground = "#dddddd"
+muted = "#7a7a7a"
+
+background = "#111315"
+dark_background = "#101010"
+darker_background = "#101010"
+lighter_background = "#1a1a1a"
+
+foreground = "#cccccc"
+dark_foreground = "#7a7a7a"
+light_foreground = "#aaaaaa"
+bright_foreground = "#dddddd"
+
+hyprland_active_border = "rgb(d97757)"
+hyprland_inactive_border = "rgb(2a2a2a)"
+active_border_color = "#d97757"
+active_tab_background = "#d97757"
+
+# Names are semantic slots, not literal hues: diagnostics and ANSI stay gray.
+red = "#dddddd"
+green = "#cccccc"
+yellow = "#aaaaaa"
+blue = "#aaaaaa"
+magenta = "#cccccc"
+cyan = "#aaaaaa"
+orange = "#8e8e8e"
+brown = "#7a7a7a"
+
+bright_red = "#dddddd"
+bright_green = "#dddddd"
+bright_yellow = "#cccccc"
+bright_blue = "#cccccc"
+bright_magenta = "#dddddd"
+bright_cyan = "#cccccc"

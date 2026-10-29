@@ -1,0 +1,9 @@
+[bar]
+background = "#111315"
+background-alpha = 1.0
+text = "#cccccc"
+active = "#d97757"
+# Preserve Omarchy's default dimensions and font scaling.
+scale-with-font = true
+size-horizontal = 26
+size-vertical = 28

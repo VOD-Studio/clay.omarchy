@@ -21,7 +21,6 @@ import zlib
 
 
 THEME = "clay.omarchy"
-CLAY = "#d97757"
 
 
 def require(condition, message):
@@ -89,7 +88,6 @@ def preview(source, output):
 
         current = home / ".local/state/omarchy/current"
         theme = current / "theme"
-        parsed = {}
         lua_files = []
         for template in templates:
             generated = theme / template.name.removesuffix(".tpl")
@@ -97,18 +95,12 @@ def preview(source, output):
             text = generated.read_text()
             require("{{" not in text, f"Unresolved template token in {generated.name}")
             if generated.suffix == ".toml":
-                parsed[generated.name] = tomllib.loads(text)
+                tomllib.loads(text)
             elif generated.suffix == ".json":
-                parsed[generated.name] = json.loads(text)
+                json.loads(text)
             elif generated.suffix == ".lua":
                 lua_files.append(generated)
         print(f"PASS {len(templates)} installed template outputs; tokens and TOML/JSON syntax")
-
-        shell = parsed["shell.toml"]
-        for key in ("focus-color", "focus-border", "selected-color"):
-            require(shell["controls"][key] == CLAY,
-                    f"Generated shell controls.{key} must be {CLAY}")
-        print("PASS generated shell keyboard-focus and selection overrides")
 
         compiler = shutil.which("luac", path=env["PATH"])
         if compiler:

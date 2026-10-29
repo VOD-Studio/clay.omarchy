@@ -9,13 +9,14 @@
 ## 主题范围
 
 - **Hyprland**：陶土色活动窗口／分组边框，深灰非活动边框。
-- **Omarchy Shell**：灰黑状态栏、菜单、启动器、通知与锁屏；键盘焦点、选中项和注意状态使用 Clay，普通弹出层与工具提示保持中性边框。
+- **Omarchy Shell**：与 Solitude 一样直接使用系统模板；状态栏、菜单、启动器、通知、锁屏、弹出层与工具提示均从 `colors.toml` 派生，不维护静态分区配色。
 - **终端**：Ghostty、Alacritty、Kitty、Foot 共用灰阶 ANSI、正文和选区，通过 Omarchy 自带模板生成。
 - **应用**：由本机模板生成 btop、Helix、Neovim/Aether、VS Code、Obsidian、浏览器、Pi 等配色。是否写入应用、是否即时重载由 Omarchy 自身及应用安装情况决定。
+- **tmux**：Omarchy 的原生主题切换钩子同步窗口前景／背景、光标、面板色板与主题环境变量；不定制状态栏、窗口标签或面板边框。
 - **图标**：`Yaru-wartybrown-dark`，使用 Omarchy 常见的 Yaru 图标包，不下载额外图标。
 - **壁纸**：`backgrounds/01-clay-horizon.png` 为默认壁纸，3840×2160；中心构图兼顾竖屏裁切，SVG 源文件随项目提供。另附 Clawd 系列（见下文）。
 
-主题本身不修改按键、显示器、窗口规则、字号、用户 Shell 布局或空闲锁屏策略。状态栏分区覆盖保留 Omarchy 当前默认的 26/28 尺寸与字体缩放；可选的全局圆角配置见下文。
+主题本身不修改按键、显示器、窗口规则、字号、用户 Shell 布局或空闲锁屏策略。Shell 尺寸与字体缩放跟随 Omarchy 默认模板；可选的全局圆角配置见下文。
 
 ### Clawd 壁纸系列
 
@@ -33,9 +34,22 @@
 
 ## 兼容性
 
-面向 **Omarchy 4.0.6 的 `colors.toml` 与 `shell.<section>.toml` 主题接口**。需要当前版 Omarchy 的模板生成和 Shell 分区覆盖支持；不承诺旧版 Waybar/Walker/Hyprlock 独立配置的适配。
+面向 **Omarchy 4.0.6 的 `colors.toml` 主题接口**，使用当前版 Omarchy 的模板生成与应用配色钩子；不承诺旧版 Waybar/Walker/Hyprlock 独立配置的适配。
 
 从 Git 安装的主题不能直接覆盖会自动加载的 Lua、终端启动配置或 `vscode.json`。本项目让 Omarchy 从色板生成这些配置，因此本地工作副本和仓库克隆使用相同的配色入口；`extras/rounded.lua` 只是手动启用的圆角配置片段，不会由主题安装器自动执行。
+
+### 共享配色机制
+
+`colors.toml` 是运行时配色的唯一源文件，与 Solitude 使用同一套 Omarchy 原生生成流程。修改色板后重新执行 `omarchy theme set <安装名>`，由系统重新生成配置并调用应用同步钩子，不需要修改各应用的生成文件。
+
+- Shell 主表面和文字使用 `background` / `foreground`；普通控件焦点与选中状态按系统模板使用正文色。
+- 菜单／启动器的选中文字使用 `accent`；弹出层与工具提示边框引用 Hyprland 边框，通知和锁屏也跟随共享色板。
+- 状态栏注意色使用 `red` 语义槽；Clay 将它设为亮灰，不另行覆盖成陶土色。
+- `accent`、`hyprland_active_border`、`active_border_color` 与 `active_tab_background` 是不同语义字段；需要统一强调色时，在同一份色板内同步修改，不支持字段间变量引用。
+- 不复制 Solitude 独立指定的 Ashen / Noctokai；Neovim、VS Code、btop 继续使用 Clay 色板生成的系统主题。
+- 不提供 `ll` 别名、`LS_COLORS` 或 eza 专用主题。目录列表中使用 ANSI 索引色的部分会随终端色板变化，硬编码真彩色不受此机制控制。
+
+相较旧版 Clay，移除了四份静态 `shell.*.toml`：普通控件焦点不再强制陶土色，浮层不再固定使用 `#1a1a1a` 背景与 `#444444` 边框。这是对齐原生共享配色的有意变化。
 
 ## 安装
 
@@ -106,12 +120,11 @@ omarchy theme refresh
 | --- | --- | --- |
 | 主背景 | `#111315` | Clay 主画布 |
 | 深层表面 | `#101010` | 侧栏／更暗背景 |
-| 浮层 | `#1a1a1a` | 浮窗与弹出层 |
+| 较亮表面 | `#1a1a1a` | `lighter_background`，由应用模板决定用途 |
 | 选区／静态边框 | `#2a2a2a` | 低对比层级 |
-| 浮层边框 | `#444444` | 中性轮廓 |
 | 正文／亮文字 | `#cccccc` / `#dddddd` | 内容与重要信息 |
 | 次级／弱化文字 | `#aaaaaa` / `#7a7a7a` | 辅助说明与注释 |
-| 交互焦点 | `#d97757` | 活动边框、键盘焦点、选中项 |
+| 强调色 | `#d97757` | 活动边框、菜单／启动器选中文字等 |
 
 `red`、`green`、`yellow` 等是 Omarchy 的语义槽名，本主题故意把它们设为不同灰阶。错误、警告、成功和 Diff 必须结合图标、文字与 `+` / `-` 辨别，不能只依赖颜色。
 
@@ -137,19 +150,18 @@ make wallpaper
 magick backgrounds/01-clay-horizon.png -resize 1280x720 preview.png
 ```
 
-`make preview` 需要 Python 3.11+、已安装的 Omarchy 和其标准运行依赖。它复制当前工作副本到临时 HOME，在真实 `.git` 目录存在的前提下走 Omarchy 的仓库主题安全分支；调用真实 headless 主题切换，检查生成结果中的未解析模板、TOML/JSON 语法、颜色与焦点行为、背景文件和 Lua 语法。`luac` 缺失时单独报告 `SKIP`。
+`make preview` 需要 Python 3.11+、已安装的 Omarchy 和其标准运行依赖。它复制当前工作副本到临时 HOME，在真实 `.git` 目录存在的前提下走 Omarchy 的仓库主题安全分支；调用真实 headless 主题切换，检查生成结果中的未解析模板、TOML/JSON 语法、背景文件和 Lua 语法。`luac` 缺失时单独报告 `SKIP`。
 
 这个命令不应用到运行中的桌面、不运行用户钩子、不读取用户模板，不会修改真实的主题设置或背景。它验证配置生成，不声称替代实际应用／桌面视觉检查。导出的 `theme/` 内容由本机 Omarchy 模板决定，不应提交回主题源文件。
 
-Shell 分区覆盖是静态 TOML，不会进行模板变量替换。修改强调色或浮层色时，需要同步 `colors.toml` 与对应的 `shell.*.toml`，再运行 `make preview`，避免菜单焦点与窗口边框不同步。
+修改配色只需编辑 `colors.toml`，再运行 `make preview`。不提交生成的 `shell.toml` 或静态 `shell.*.toml`，避免它们覆盖共享色板。用户级 `~/.config/omarchy/themed/` 模板仍可覆盖系统模板；隔离预览不加载这些个人定制。
 
-本机已验证 Omarchy **4.0.6-1**：默认临时预览与导出模式、19 份生成模板、3 份 Lua 语法、Ghostty 实际配置校验，以及导出路径的拒绝覆盖／拒绝项目内输出。应用后 Hyprland 活动／非活动边框解析为 `#d97757` / `#2a2a2a`，`hyprctl configerrors` 为空，Shell IPC 响应正常。
+本次共享配色切换已用本机真实 Omarchy 管线验证：19 份模板生成、TOML/JSON 解析、3 份 Lua 语法、背景解析，以及 Shell 表面／文字／焦点／选中项／注意色／边框的色板映射。验证在隔离 HOME 中执行，不更换运行中桌面，也不声称完成实际桌面视觉检查。
 
 ## 项目结构
 
 ```text
 colors.toml                 语义色板，应用配置的生成入口
-shell.*.toml                只覆盖需要定制的 Shell 分区
 icons.theme                 图标主题名称
 backgrounds/                可直接分发的 4K 壁纸
 artwork/                    自包含、可编辑的 SVG 源文件
@@ -161,4 +173,4 @@ Makefile                    预览与壁纸重建入口
 CHANGELOG.md                用户可见变更与验证记录
 ```
 
-不维护一份过时的完整 `shell.toml`，也不复制系统模板；未来 Omarchy 的其他分区与应用模板仍由系统维护。色板设计参考同级 clay.nvim 与 clay.omp，但主题运行时不依赖这两个工作目录。
+不维护完整 `shell.toml` 或静态 Shell 分区覆盖，也不复制系统模板；未来 Omarchy 的其他分区与应用模板仍由系统维护。色板设计参考同级 clay.nvim 与 clay.omp，但主题运行时不依赖这两个工作目录。

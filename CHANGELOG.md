@@ -8,8 +8,17 @@
 - 记录一次性安装、全局生效与回退方式，以及少数硬编码方角和应用内部控件的边界。
 - 增加 5 张 3840×2160 Clawd 壁纸（`backgrounds/02`–`06`）：参照 TYPE-17 的居中画框构图，以 Claude 像素吉祥物为主角，仅用 Clay 色板；由 `scripts/clawd_wallpapers.py` 生成，`make wallpaper` 一并重建。默认壁纸仍为 Clay Horizon。
 
+### Changed
+
+- 与 Solitude 对齐原生共享配色机制：移除四份静态 `shell.*.toml`，运行时配色统一从 `colors.toml` 经系统模板生成。
+- Shell 普通控件焦点／选中态、状态栏注意色、弹出层与工具提示改为系统语义映射，不再固定旧版 Clay 的强调色与中性边框。
+- 移除预览脚本中固定陶土色控件的旧断言，保留真实 headless 生成、配置语法与背景检查。
+- 说明 Omarchy 已提供 tmux 基础颜色同步钩子；不新增状态栏、面板边框或 eza 独立主题，不引入 Solitude 的独立编辑器主题。
+
 ### Verified
 
+- 共享配色切换：真实隔离 headless 管线生成 19 份模板，TOML/JSON、3 份 Lua 语法与背景解析通过；Shell 表面、焦点、选中项、注意色与边框符合共享色板映射。未更换运行中桌面。
+- 在临时副本中只修改色板的背景、正文、强调色、`red` 与活动边框，重新运行真实管线，确认 Shell 与终端生成配色同步变化，无静态覆盖残留；临时文件已清理。
 - 实际 Hyprland 配置加载 `rounding = 12`、`rounding_power = 2.0`，重载后无配置错误，Shell IPC 正常。
 - 用安装的真实 Shell QML 组件执行离屏渲染，读取到共享半径、按钮、输入框与开关行半径均为 12，开关 `rounded = true`。
 

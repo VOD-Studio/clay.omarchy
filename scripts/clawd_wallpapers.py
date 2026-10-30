@@ -233,6 +233,7 @@ def horizon():
 # ------------------------------------------------------------ 04 TERMINAL
 def terminal():
     # The CLI mark decoded from its quadrant block glyphs into an 18x6 pixel grid.
+    # Terminal cells are ~1:2, so each quadrant pixel is twice as tall as it is wide.
     rows = [" ▐▛███▜▌", "▝▜█████▛▘", "  ▘▘ ▝▝"]
     quad = {"█": "1111", "▐": "0101", "▌": "1010", "▛": "1110", "▜": "1101",
             "▝": "0100", "▘": "1000", " ": "0000"}  # TL TR BL BR
@@ -243,18 +244,18 @@ def terminal():
             for i, bit in enumerate(q):
                 if bit == "1":
                     px.add((c * 2 + i % 2, r * 2 + i // 2))
-    s = 48
+    sx, sy = 40, 80
     ox = FX + 170
-    oy = FY + (FH - 6 * s) / 2 - 30
+    oy = FY + (FH - 240 - 6 * sy) / 2  # centred above the prompt rule
     mono = f'font-family="{FONT}" letter-spacing="1"'
-    tx = ox + 18 * s + 140
+    tx = ox + 18 * sx + 140
     lines = [
         (CLAY, 64, "✻ Clawd"),
         (MUTED, 28, "/help for help · /status for your setup"),
         (MUTED, 28, "cwd: ~/clay.omarchy"),
     ]
     txt = ""
-    y = oy + 90
+    y = oy + 3 * sy - 40
     for fill, size, t in lines:
         txt += f'<text x="{tx}" y="{y}" {mono} font-size="{size}" fill="{fill}">{t}</text>'
         y += size + 40
@@ -264,8 +265,10 @@ def terminal():
               f'<rect x="{FX+160}" y="{prompt_y-22}" width="22" height="42" fill="{LINE}"/>'
               f'<text x="{FX+FW-110}" y="{prompt_y+100}" text-anchor="end" {mono} font-size="24" fill="{MUTED}">? for shortcuts</text>')
     scan = "".join(f'<path d="M {FX},{FY+i*6} H {FX+FW}"/>' for i in range(0, FH // 6))
+    sprite = "\n".join(f'<rect x="{ox+x*sx}" y="{oy+y*sy}" width="{sx}" height="{sy}" fill="{CLAY}"/>'
+                       for x, y in sorted(px))
     body = f'''  <g clip-path="url(#frame)">
-    {cells(px, ox, oy, s, CLAY)}
+    {sprite}
     {txt}
     {prompt}
     <g stroke="#000" stroke-width="2" opacity="{SCAN}">{scan}</g>

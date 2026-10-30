@@ -24,6 +24,7 @@
 - 暗色色板对齐 clay.nvim 设计规范：底色由偏冷的 `#111315` 改为中性 `#121212`，选区 `#363636`，强调文字 `#e6e6e6`，`dark_foreground` 改为 `#8e8e8e`，使 btop 渐变等由弱到强单调递增。
 - ANSI 槽按设计规范的终端色表填写：`red` / `bright_red` 改为 Clay，`green` / `bright_green` 为强调灰，其余为灰阶。状态栏注意色、终端当前搜索匹配随之变为 Clay；应用模板中复用 `red` 的错误色也变为 Clay。
 - 壁纸按新色板重新生成，移除偏冷的灰色；Clawd Unit 的阴影带裁切到机身内，不再压暗画布与眼孔。
+- Clawd Terminal（`05-clawd-terminal.png`，暗色与亮色）按终端字符格约 1:2 的比例绘制象限块像素（宽 40、高 80），修正 Clawd 被纵向压扁；右侧文字随之与机身垂直居中。
 
 ### Verified
 

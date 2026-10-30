@@ -1,22 +1,47 @@
 """Render the Clawd wallpaper series: TYPE-17-style framed panels in the Clay palette.
 
 Unofficial fan art of Anthropic's Clawd mascot, redrawn as a 16x8 pixel sprite.
-Writes 3840x2160 PNGs 02-06 to backgrounds/ by default.
+Writes 3840x2160 PNGs 02-06 to backgrounds/ (dark) or light/backgrounds/ (light).
 Needs rsvg-convert plus the JetBrainsMono Nerd Font and Noto Sans CJK JP fonts.
 """
 import argparse, random, subprocess, tempfile
 from pathlib import Path
 
 W, H = 3840, 2160
-BG = "#111315"
 CLAY = "#d97757"
 CLAY_HI = "#e8977b"
 CLAY_MID = "#b86347"
 CLAY_DK = "#7c3f2d"
-LINE = "#cccccc"
-MUTED = "#7a7a7a"
-SUBTLE = "#2a2a2a"
 FONT = "JetBrainsMono Nerd Font"
+
+# Neutral roles from the clay.nvim palette (design/clay-design-system.md).
+# Clay and its sprite shades stay the same in both variants.
+PALETTES = {
+    "dark": {
+        "BG": "#121212",      # bg
+        "LINE": "#cccccc",    # fg: frame, captions, outlines
+        "MUTED": "#7a7a7a",   # comment: annotations, stars
+        "SUBTLE": "#2a2a2a",  # border: grids, contours, background sprites
+        "RAISED": "#363636",  # selection: horizon line, highlighted sprites
+        "STRONG": "#444444",  # float_border: cell grid, rules
+        "RIDGE": "#1a1a1a",   # float: mountain fill
+        "EDGE": "#555555",    # gutter: mountain edge
+        "SCAN": "0.1",        # terminal scanline opacity
+    },
+    "light": {
+        "BG": "#f6f6f6",
+        "LINE": "#333333",
+        "MUTED": "#737373",
+        "SUBTLE": "#d5d5d5",
+        "RAISED": "#c6c6c6",
+        "STRONG": "#b5b5b5",
+        "RIDGE": "#ebebeb",
+        "EDGE": "#9d9d9d",
+        "SCAN": "0.05",       # black scanlines read stronger on a light canvas
+    },
+}
+# The renderers read these names at call time; main() switches the variant.
+globals().update(PALETTES["dark"])
 
 # Frame geometry follows TYPE-17: a centred panel ~53% x 46% of the canvas.
 FX, FY, FW, FH = 906, 576, 2028, 1004
@@ -42,7 +67,8 @@ def svg(title, body, defs=""):
 '''
 
 
-def frame(left, mid, right, stroke=LINE):
+def frame(left, mid, right):
+    stroke = LINE  # Read per call: a default argument would freeze the dark palette.
     x2, y2 = FX + FW, FY + FH
     ty = y2 + 46
     cap = f'font-family="{FONT}" font-size="25" letter-spacing="3" fill="{stroke}"'
@@ -80,12 +106,12 @@ def unit():
     ox, oy = FX + FW / 2 - 8 * s + 260, FY + FH / 2 - 4 * s + 40
     rect = lambda x, y, w, h, f, e="": f'<rect x="{ox+x*s}" y="{oy+y*s}" width="{w*s}" height="{h*s}" fill="{f}" {e}/>'
     P = lambda x, y: (ox + x * s, oy + y * s)
-    parts = [
+    hull = [
         rect(2, 0, 12, 6, CLAY),
         rect(0, 3, 2, 1, CLAY_MID), rect(14, 3, 2, 1, CLAY_MID),
         *(rect(x, 6, 1, 2, CLAY_MID) for x in (3, 5, 10, 12)),
-        rect(4, 1, 1, 2, BG), rect(11, 1, 1, 2, BG),
     ]
+    eyes = [rect(4, 1, 1, 2, BG), rect(11, 1, 1, 2, BG)]
     # Panel seams, rivets, vents and stencils give the flat sprite a machined surface.
     x0, y0 = P(2, 0)
     det = []
@@ -102,9 +128,11 @@ def unit():
     det.append(f'<text x="{x0+5.0*s}" y="{y0+1.0*s}" font-family="{FONT}" font-size="44" letter-spacing="6" fill="{CLAY_DK}">CLWD / MK.I</text>')
     det.append(f'<g fill="{CLAY_DK}">' + "".join(
         f'<path d="M {x0+5.2*s+i*70},{y0+2.7*s} l 40,0 l -25,-60 l -40,0 z"/>' for i in range(5)) + '</g>')
-    # A broad diagonal shadow band, like a lit mecha hull.
-    shade = f'<path d="M {x0+4.5*s},{y0-400} L {x0+7.8*s},{y0-400} L {x0+3.2*s},{y0+1800} L {x0-0.1*s},{y0+1800} Z" fill="#000" opacity="0.22"/>'
-    body = "\n".join(parts + det + [shade])
+    # A broad diagonal shadow band, like a lit mecha hull, clipped to the hull so
+    # it never tints the canvas or the eye holes.
+    shade = (f'<clipPath id="hull">{"".join(hull)}</clipPath>'
+             f'<path d="M {x0+4.5*s},{y0-400} L {x0+7.8*s},{y0-400} L {x0+3.2*s},{y0+1800} L {x0-0.1*s},{y0+1800} Z" fill="#000" opacity="0.22" clip-path="url(#hull)"/>')
+    body = "\n".join(hull + det + [shade] + eyes)
     g = f'''  <g clip-path="url(#frame)">
     <g transform="rotate(-11 {FX+FW/2} {FY+FH/2})">
 {body}
@@ -154,7 +182,7 @@ def schematic():
     <g stroke="{SUBTLE}" stroke-width="1" opacity="0.7">{grid}</g>
     <clipPath id="sprite">{cellgrid}</clipPath>
     <g clip-path="url(#sprite)" stroke="{CLAY}" stroke-width="2" opacity="0.35">{hatch}</g>
-    <g fill="none" stroke="#444444" stroke-width="1.5">{cellgrid}</g>
+    <g fill="none" stroke="{STRONG}" stroke-width="1.5">{cellgrid}</g>
     <path d="{outline(SPRITE, ox, oy, s)}" stroke="{D}" stroke-width="4" fill="none" stroke-linecap="square"/>
 {dim}
     {calls}
@@ -171,21 +199,21 @@ def horizon():
     tx = FX + FW / 2 - 2010 * k
     ty = FY + FH - 2160 * k + 120
     ridge = f'''
-      <path d="M 830,2290 C 1080,2030 1185,1640 1465,1320 C 1650,1108 1820,990 2010,990 C 2250,990 2410,1155 2570,1370 C 2800,1680 2970,2040 3300,2290 Z" fill="#1a1c1e"/>
-      <path d="M 830,2290 C 1080,2030 1185,1640 1465,1320 C 1650,1108 1820,990 2010,990 C 2250,990 2410,1155 2570,1370 C 2800,1680 2970,2040 3300,2290" fill="none" stroke="#555" stroke-width="3"/>
-      <g fill="none" stroke="#2f2f2f" stroke-width="3">
+      <path d="M 830,2290 C 1080,2030 1185,1640 1465,1320 C 1650,1108 1820,990 2010,990 C 2250,990 2410,1155 2570,1370 C 2800,1680 2970,2040 3300,2290 Z" fill="{RIDGE}"/>
+      <path d="M 830,2290 C 1080,2030 1185,1640 1465,1320 C 1650,1108 1820,990 2010,990 C 2250,990 2410,1155 2570,1370 C 2800,1680 2970,2040 3300,2290" fill="none" stroke="{EDGE}" stroke-width="3"/>
+      <g fill="none" stroke="{SUBTLE}" stroke-width="3">
         <path d="M 1030,2290 C 1230,2050 1345,1720 1570,1440 C 1730,1240 1865,1130 2020,1130 C 2220,1130 2360,1295 2505,1490 C 2700,1755 2850,2070 3120,2290"/>
         <path d="M 1220,2290 C 1390,2070 1485,1795 1670,1560 C 1800,1395 1910,1270 2030,1270 C 2195,1270 2320,1435 2450,1610 C 2610,1825 2735,2100 2940,2290"/>
         <path d="M 1410,2290 C 1545,2100 1635,1870 1775,1680 C 1880,1540 1950,1410 2040,1410 C 2170,1410 2280,1575 2390,1730 C 2520,1915 2625,2130 2760,2290"/>
       </g>
       <path d="M -400,1835 C 525,1792 1005,1873 1490,1918 C 2055,1970 2590,1926 3070,1865 C 3360,1828 3615,1818 4300,1846 L 4300,2400 L -400,2400 Z" fill="{BG}"/>
-      <path d="M -400,1835 C 525,1792 1005,1873 1490,1918 C 2055,1970 2590,1926 3070,1865 C 3360,1828 3615,1818 4300,1846" fill="none" stroke="#333" stroke-width="2.5"/>'''
+      <path d="M -400,1835 C 525,1792 1005,1873 1490,1918 C 2055,1970 2590,1926 3070,1865 C 3360,1828 3615,1818 4300,1846" fill="none" stroke="{RAISED}" stroke-width="2.5"/>'''
     s = 9
     peak_x, peak_y = tx + 2010 * k, ty + 990 * k
     cx, cy = peak_x - 8 * s, peak_y - 8 * s + 1
     random.seed(17)  # Fixed star field keeps rebuilt PNGs identical.
     stars = "".join(
-        f'<circle cx="{FX+random.random()*FW:.0f}" cy="{FY+random.random()*FH*0.55:.0f}" r="{random.choice([1.5,2,2.5])}" fill="#7a7a7a" opacity="{random.choice([0.35,0.5,0.7])}"/>'
+        f'<circle cx="{FX+random.random()*FW:.0f}" cy="{FY+random.random()*FH*0.55:.0f}" r="{random.choice([1.5,2,2.5])}" fill="{MUTED}" opacity="{random.choice([0.35,0.5,0.7])}"/>'
         for _ in range(70))
     moon = f'<circle cx="{FX+FW*0.78}" cy="{FY+210}" r="64" fill="none" stroke="{CLAY}" stroke-width="3" opacity="0.8"/>'
     glow = f'<ellipse cx="{peak_x}" cy="{peak_y}" rx="260" ry="70" fill="url(#glow)"/>'
@@ -231,7 +259,7 @@ def terminal():
         txt += f'<text x="{tx}" y="{y}" {mono} font-size="{size}" fill="{fill}">{t}</text>'
         y += size + 40
     prompt_y = FY + FH - 170
-    prompt = (f'<path d="M {FX+80},{prompt_y-70} H {FX+FW-80} M {FX+80},{prompt_y+50} H {FX+FW-80}" stroke="#444" stroke-width="2"/>'
+    prompt = (f'<path d="M {FX+80},{prompt_y-70} H {FX+FW-80} M {FX+80},{prompt_y+50} H {FX+FW-80}" stroke="{STRONG}" stroke-width="2"/>'
               f'<text x="{FX+110}" y="{prompt_y+12}" {mono} font-size="36" fill="{LINE}">&gt;</text>'
               f'<rect x="{FX+160}" y="{prompt_y-22}" width="22" height="42" fill="{LINE}"/>'
               f'<text x="{FX+FW-110}" y="{prompt_y+100}" text-anchor="end" {mono} font-size="24" fill="{MUTED}">? for shortcuts</text>')
@@ -240,7 +268,7 @@ def terminal():
     {cells(px, ox, oy, s, CLAY)}
     {txt}
     {prompt}
-    <g stroke="#000" stroke-width="2" opacity="0.1">{scan}</g>
+    <g stroke="#000" stroke-width="2" opacity="{SCAN}">{scan}</g>
   </g>
 '''
     return svg("Clawd Terminal", body + frame("CLAY-04", "CLAWD · TTY", "CLAY.OMARCHY"))
@@ -260,7 +288,7 @@ def march():
             x = FX + 40 + c * gx + off - gx / 2
             y = FY + 34 + r * gy
             hi = (r, c) == (3, 5)
-            fill = CLAY if hi else ("#2c2e30" if (r + c) % 3 else "#3a3a3a")
+            fill = CLAY if hi else (SUBTLE if (r + c) % 3 else RAISED)
             out.append(cells(SPRITE, x, y, s, fill))
     body = f'''  <g clip-path="url(#frame)">
 {chr(10).join(out)}
@@ -276,9 +304,12 @@ SERIES = [("02-clawd-unit", unit), ("03-clawd-schematic", schematic), ("04-clawd
 def main():
     root = Path(__file__).resolve().parent.parent
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--output", type=Path, default=root / "backgrounds", help="PNG directory")
+    ap.add_argument("--variant", choices=PALETTES, default="dark", help="palette to render")
+    ap.add_argument("--output", type=Path, help="PNG directory (default: the variant's backgrounds/)")
     ap.add_argument("--svg", type=Path, help="also keep the intermediate SVGs here")
     args = ap.parse_args()
+    globals().update(PALETTES[args.variant])
+    args.output = args.output or root / ("light" if args.variant == "light" else "") / "backgrounds"
     args.output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         svg_dir = args.svg or Path(tmp)

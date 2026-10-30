@@ -2,7 +2,9 @@
 """Exercise installed Omarchy templates in a disposable, headless home.
 
 The complete working tree, including its real .git directory, is copied so
-Omarchy applies the restrictions used for installed repository themes.
+Omarchy applies the restrictions used for installed repository themes. The
+light variant is linked from that copy's light/ directory, matching the
+documented `ln -s` installation.
 --output exports current/ with background links dereferenced, so the exported
 configs and chosen image remain usable after the temporary home is removed.
 """
@@ -20,7 +22,8 @@ import tomllib
 import zlib
 
 
-THEME = "clay.omarchy"
+REPOSITORY = "clay.omarchy"
+THEMES = {"dark": REPOSITORY, "light": "clay-light"}
 
 
 def require(condition, message):
@@ -45,7 +48,7 @@ def check_png(path):
             "Chosen background has an invalid PNG IHDR header")
 
 
-def preview(source, output):
+def preview(source, output, variant):
     omarchy = Path(os.environ.get("OMARCHY_PATH", "/usr/share/omarchy")).resolve()
     command = Path("/usr/bin/omarchy-theme-set")
     require(command.is_file(), f"Installed theme command not found: {command}")
@@ -61,8 +64,10 @@ def preview(source, output):
         home = sandbox / "home"
         runtime = sandbox / "runtime"
         runtime.mkdir(mode=0o700)
-        installed = home / ".config/omarchy/themes" / THEME
-        shutil.copytree(source, installed, symlinks=True)
+        themes = home / ".config/omarchy/themes"
+        shutil.copytree(source, themes / REPOSITORY, symlinks=True)
+        (themes / THEMES["light"]).symlink_to(themes / REPOSITORY / "light")
+        theme_name = THEMES[variant]
         env = {
             "PATH": "/usr/bin:/bin",
             "HOME": str(home),
@@ -76,7 +81,7 @@ def preview(source, output):
             "OMARCHY_THEME_HEADLESS": "1",
             "LC_ALL": "C.UTF-8",
         }
-        result = subprocess.run([str(command), THEME], cwd=home, env=env,
+        result = subprocess.run([str(command), theme_name], cwd=home, env=env,
                                 capture_output=True, text=True)
         if result.stdout:
             print(result.stdout, end="")
@@ -84,10 +89,12 @@ def preview(source, output):
             print(result.stderr, end="", file=sys.stderr)
         if result.returncode:
             raise RuntimeError(f"omarchy-theme-set exited with status {result.returncode}")
-        print("PASS installed headless theme pipeline (isolated HOME and runtime)")
+        print(f"PASS {variant}: installed headless theme pipeline for {theme_name} (isolated HOME and runtime)")
 
         current = home / ".local/state/omarchy/current"
         theme = current / "theme"
+        mode = tomllib.loads((theme / "colors.toml").read_text()).get("mode")
+        require(mode == variant, f"Staged colors.toml has mode {mode!r}, expected {variant!r}")
         lua_files = []
         for template in templates:
             generated = theme / template.name.removesuffix(".tpl")
@@ -100,7 +107,7 @@ def preview(source, output):
                 json.loads(text)
             elif generated.suffix == ".lua":
                 lua_files.append(generated)
-        print(f"PASS {len(templates)} installed template outputs; tokens and TOML/JSON syntax")
+        print(f"PASS {variant}: {len(templates)} installed template outputs; tokens and TOML/JSON syntax")
 
         compiler = shutil.which("luac", path=env["PATH"])
         if compiler:
@@ -109,36 +116,41 @@ def preview(source, output):
                                         env=env, capture_output=True, text=True)
                 require(result.returncode == 0,
                         f"Lua syntax error in {path.name}: {result.stderr.strip()}")
-            print(f"PASS Lua syntax ({len(lua_files)} files, luac -p)")
+            print(f"PASS {variant}: Lua syntax ({len(lua_files)} files, luac -p)")
         else:
             print("SKIP Lua syntax: luac is not installed")
 
         background = current / "background"
         require(background.is_symlink(), "Pipeline did not select a background")
         check_png(background.resolve(strict=True))
-        print("PASS selected background resolves to a valid PNG header")
+        print(f"PASS {variant}: selected background resolves to a valid PNG header")
         count = sum(path.is_file() for path in theme.rglob("*"))
         if output is not None:
             # copytree refuses existing destinations, including a concurrent
             # creation after argument validation. Dereference the background.
             shutil.copytree(current, output, symlinks=False)
-            print(f"PASS {count} theme files; exported current/ to {output}")
+            print(f"PASS {variant}: {count} theme files; exported current/ to {output}")
         else:
-            print(f"PASS {count} theme files; temporary preview removed on exit (no export)")
+            print(f"PASS {variant}: {count} theme files; temporary preview removed on exit (no export)")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--variant", choices=("dark", "light", "both"), default="both",
+                        help="theme to stage (default: both)")
     parser.add_argument("--output", type=Path, metavar="DIRECTORY",
                         help="export current/ to a new directory outside the project")
     args = parser.parse_args()
     source = Path(__file__).resolve().parents[1]
     output = args.output.absolute().resolve() if args.output is not None else None
+    variants = ("dark", "light") if args.variant == "both" else (args.variant,)
     try:
         if output is not None:
+            require(len(variants) == 1, "--output needs a single --variant")
             require(not output.is_relative_to(source), "Output must be outside the source tree")
             require(not os.path.lexists(args.output.absolute()), "Output path already exists")
-        preview(source, output)
+        for variant in variants:
+            preview(source, output, variant)
     except (OSError, ValueError, RuntimeError, KeyError) as error:
         print(f"FAIL {error}", file=sys.stderr)
         return 1

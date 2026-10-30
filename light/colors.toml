@@ -1,0 +1,43 @@
+# Clay (light): neutral surfaces and syntax, terracotta interaction focus.
+# Values follow clay.nvim's design/clay-design-system.md light palette.
+# Canonical Omarchy semantic names; app configs are generated at theme-set time.
+mode = "light"
+
+accent = "#d97757"
+selection = "#c6c6c6"
+selection_background = "#c6c6c6"
+selection_foreground = "#202020"
+muted = "#737373"
+
+background = "#f6f6f6"
+dark_background = "#f8f8f8"
+darker_background = "#f8f8f8"
+lighter_background = "#ebebeb"
+
+foreground = "#333333"
+dark_foreground = "#616161"
+light_foreground = "#4b4b4b"
+bright_foreground = "#202020"
+
+hyprland_active_border = "rgb(d97757)"
+hyprland_inactive_border = "rgb(d5d5d5)"
+active_border_color = "#d97757"
+active_tab_background = "#d97757"
+
+# ANSI slots follow the design's terminal table: grayscale except red, which is
+# Clay so errors and diff removals stand apart from default text.
+red = "#d97757"
+green = "#202020"
+yellow = "#4b4b4b"
+blue = "#4b4b4b"
+magenta = "#616161"
+cyan = "#4b4b4b"
+orange = "#616161"
+brown = "#737373"
+
+bright_red = "#d97757"
+bright_green = "#202020"
+bright_yellow = "#333333"
+bright_blue = "#333333"
+bright_magenta = "#4b4b4b"
+bright_cyan = "#333333"

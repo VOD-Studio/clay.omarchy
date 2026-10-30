@@ -11,6 +11,9 @@
 - 增加可手动启用的 `extras/rounded.lua`：窗口 12px 圆角、圆角曲率 2.0，Omarchy Shell 支持共享样式的元素跟随窗口，开关使用胶囊形。
 - 记录一次性安装、全局生效与回退方式，以及少数硬编码方角和应用内部控件的边界。
 - 增加 5 张 3840×2160 Clawd 壁纸（`backgrounds/02`–`06`）：参照 TYPE-17 的居中画框构图，以 Claude 像素吉祥物为主角，仅用 Clay 色板；由 `scripts/clawd_wallpapers.py` 生成，`make wallpaper` 一并重建。默认壁纸仍为 Clay Horizon。
+- 增加亮色主题 `clay-light`（`light/`）：按 clay.nvim 设计规范的亮色色板编写 `colors.toml`（`mode = "light"`），图标 `Yaru-wartybrown`，附 5 张亮色 Clawd 壁纸与缩略图；通过 `ln -s "$PWD/light" ~/.config/omarchy/themes/clay-light` 安装。
+- 壁纸生成器支持 `--variant dark|light`，中性色集中在 `PALETTES`；`make wallpaper` 同时重建两个变体的壁纸与缩略图。
+- `make preview` 依次验证暗色与亮色，`--variant` 选择单个变体，并检查暂存色板的 `mode`。
 
 ### Changed
 
@@ -18,6 +21,9 @@
 - Shell 普通控件焦点／选中态、状态栏注意色、弹出层与工具提示改为系统语义映射，不再固定旧版 Clay 的强调色与中性边框。
 - 移除预览脚本中固定陶土色控件的旧断言，保留真实 headless 生成、配置语法与背景检查。
 - 说明 Omarchy 已提供 tmux 基础颜色同步钩子；不新增状态栏、面板边框或 eza 独立主题，不引入 Solitude 的独立编辑器主题。
+- 暗色色板对齐 clay.nvim 设计规范：底色由偏冷的 `#111315` 改为中性 `#121212`，选区 `#363636`，强调文字 `#e6e6e6`，`dark_foreground` 改为 `#8e8e8e`，使 btop 渐变等由弱到强单调递增。
+- ANSI 槽按设计规范的终端色表填写：`red` / `bright_red` 改为 Clay，`green` / `bright_green` 为强调灰，其余为灰阶。状态栏注意色、终端当前搜索匹配随之变为 Clay；应用模板中复用 `red` 的错误色也变为 Clay。
+- 壁纸按新色板重新生成，移除偏冷的灰色；Clawd Unit 的阴影带裁切到机身内，不再压暗画布与眼孔。
 
 ### Verified
 
@@ -25,6 +31,7 @@
 - 在临时副本中只修改色板的背景、正文、强调色、`red` 与活动边框，重新运行真实管线，确认 Shell 与终端生成配色同步变化，无静态覆盖残留；临时文件已清理。
 - 实际 Hyprland 配置加载 `rounding = 12`、`rounding_power = 2.0`，重载后无配置错误，Shell IPC 正常。
 - 用安装的真实 Shell QML 组件执行离屏渲染，读取到共享半径、按钮、输入框与开关行半径均为 12，开关 `rounded = true`。
+- 设计规范同步：真实隔离 headless 管线对暗色与亮色各生成 19 份模板，TOML/JSON、3 份 Lua 语法与背景解析通过，暂存色板 `mode` 与变体一致。导出的 Ghostty 配置中暗色为背景 `#121212`、正文 `#cccccc`、ANSI 1 `#d97757`；亮色为背景 `#f6f6f6`、正文 `#333333`、ANSI 1 `#d97757`；各自选中对应目录的第一张壁纸与图标主题。未更换运行中桌面。
 
 ## 0.1.0 — 2026-10-30
 
